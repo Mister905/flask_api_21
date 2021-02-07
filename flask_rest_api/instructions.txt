@@ -1,0 +1,21 @@
+https://help.dreamhost.com/hc/en-us/articles/115000695551-Installing-and-using-virtualenv-with-Python-3
+
+python3 -m pip install --upgrade pip
+
+pip3 install virtualenv
+
+which python3
+
+virtualenv -p /usr/bin/python3 venv
+
+source venv/bin/activate
+
+When finished working in the virtual environment, you can deactivate it by running the following:
+
+deactivate
+
+pip install flask
+
+pip install flask-restful
+
+pip freeze
