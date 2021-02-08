@@ -1,64 +1,39 @@
-from flask import Flask, request
-from flask_restful import Resource, Api, reqparse
-from flask_jwt import JWT, jwt_required, current_identity
+from flask import Flask, jsonify
+from flask_restful import Api
+from flask_jwt import JWT
 
 from security import authenticate, identity
+from resources.user import UserRegister
+from resources.item import Item, ItemList
+
+from db import db
 
 app = Flask(__name__)
-app.config['PROPAGATE_EXCEPTIONS'] = True # To allow flask propagating exception even if debug is set to false on app
+app.config['PROPAGATE_EXCEPTIONS'] = True
 app.secret_key = 'jose'
 api = Api(app)
 
+# https://blog.tecladocode.com/learn-python-advanced-configuration-of-flask-jwt/
+# Change the url to the authentication endpoint from /auth to /login
+app.config['JWT_AUTH_URL_RULE'] = '/login'
+# config JWT to expire within half an hour
+from datetime import timedelta
+app.config['JWT_EXPIRATION_DELTA'] = timedelta(seconds=1800)
+# app.config['JWT_AUTH_USERNAME_KEY'] = 'email'
 jwt = JWT(app, authenticate, identity)
 
-items = []
-
-class Item(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('price',
-        type=float,
-        required=True,
-        help="This field cannot be left blank!"
-    )
-
-    @jwt_required()
-    def get(self, name):
-        return {'item': next(filter(lambda x: x['name'] == name, items), None)}
-
-    def post(self, name):
-        if next(filter(lambda x: x['name'] == name, items), None) is not None:
-            return {'message': "An item with name '{}' already exists.".format(name)}
-
-        data = Item.parser.parse_args()
-
-        item = {'name': name, 'price': data['price']}
-        items.append(item)
-        return item
-
-    @jwt_required()
-    def delete(self, name):
-        global items
-        items = list(filter(lambda x: x['name'] != name, items))
-        return {'message': 'Item deleted'}
-
-    @jwt_required()
-    def put(self, name):
-        data = Item.parser.parse_args()
-        # Once again, print something not in the args to verify everything works
-        item = next(filter(lambda x: x['name'] == name, items), None)
-        if item is None:
-            item = {'name': name, 'price': data['price']}
-            items.append(item)
-        else:
-            item.update(data)
-        return item
-
-class ItemList(Resource):
-    def get(self):
-        return {'items': items}
+@jwt.auth_response_handler
+def customized_response_handler(access_token, identity):
+    return jsonify({
+                'access_token': access_token.decode('utf-8'),
+                'user_id': identity.id
+            })
 
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemList, '/items')
+api.add_resource(UserRegister, '/register')
 
+
+# https://medium.com/python-features/understanding-if-name-main-in-python-a37a3d4ab0c3
 if __name__ == '__main__':
     app.run(debug=True)  # important to mention debug=True

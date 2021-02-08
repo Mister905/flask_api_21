@@ -1,21 +1,42 @@
-https://help.dreamhost.com/hc/en-us/articles/115000695551-Installing-and-using-virtualenv-with-Python-3
+# Upgrade pip
 
 python3 -m pip install --upgrade pip
 
-pip3 install virtualenv
+# Install virtual env
 
-which python3
+python3 -m pip install virtualenv
 
-virtualenv -p /usr/bin/python3 venv
+# Create virtual env
+
+python3 -m virtualenv venv
+
+# Activate virtual env
 
 source venv/bin/activate
 
-When finished working in the virtual environment, you can deactivate it by running the following:
+# Deactivate virtual env
 
 deactivate
 
-pip install flask
+# Install packages with pip
 
-pip install flask-restful
+python3 -m pip install flask
 
-pip freeze
+python3 -m pip install flask-restful
+
+python3 -m pip install Flask-JWT
+
+python3 -m pip install Flask-SQLAlchemy
+
+# List installed packages
+
+pip3 list
+
+# Run program
+
+python3 app.py
+
+# Initialize SQLite DB
+
+python3 sqlite.py
+
